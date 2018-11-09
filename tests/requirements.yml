@@ -1,0 +1,5 @@
+---
+# Для установки ролей используйте команду ansible-galaxy install -r requirements.yml --force
+- src: https://github.com/alesh89/role-ansible-openvpn-client
+  version: master
+  name: ansible-openvpn

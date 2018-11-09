@@ -1,7 +1,10 @@
 ---
-- hosts: clients
-  remote_user: viktor
+- hosts: all
+  gather_facts: yes
   become: yes
-  serial: 1
+  become_user: root
+  pre_tasks:
+    - name: 'apt-get update'
+      raw: "apt-get update"
   roles:
     - role: openvpn
