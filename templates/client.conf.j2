@@ -1,0 +1,39 @@
+client
+
+proto {{ openvpn_proto }}
+
+{% for host in groups['servers'] %}
+remote {{ hostvars[host]['ansible_host'] }} {{ openvpn_port }} 
+{% endfor %}
+
+dev tun
+nobind							
+remote-cert-tls	server				
+
+{% if openvpn_tls_push %}
+tls-auth	{{ openvpn_keydir }}/ta.key 1		
+{% endif %}
+
+key-direction 1
+<ca>
+{{ ca_cert.content|b64decode }}
+</ca>
+
+<tls-auth>
+{{ tls_auth.content|b64decode }}
+</tls-auth>
+
+<cert>
+{{ item.0.content|b64decode }}
+</cert>
+
+<key>
+{{ item.1.content|b64decode }}
+</key>
+
+daemon
+log-append /var/log/openvpn.log
+
+auth-nocache
+comp-lzo
+reneg-sec {{openvpn_reneg}}

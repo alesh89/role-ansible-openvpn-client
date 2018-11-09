@@ -1,0 +1,10 @@
+---
+
+galaxy_info:
+  author: Viktor Aleshinskiy
+  description: Deploy openvpn clients.
+
+  platforms:
+  - name: Ubuntu
+    versions:
+    - xenial

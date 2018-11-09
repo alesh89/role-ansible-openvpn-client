@@ -1,0 +1,126 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  become_user: root
+  pre_tasks:
+    - name: 'apt-get update'
+      raw: "apt-get update"
+
+  tasks:
+    - name: 'Install packages'
+      apt:
+        name: '{{ item }}'
+        state: present
+        update_cache: yes
+      with_items: 
+        - openvpn
+        - udev
+        - openssl
+      tags:
+        - always
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
+
+    - name: 'OpenVPN - Create keys directory'
+      file:
+        path: "/etc/openvpn/keys" 
+        mode: 0700
+        owner: root
+        group: root
+        state: directory
+		
+# generate client keys
+    - name: 'Copy openssl client extensions'
+      copy:
+        src: openssl-client.ext
+        dest: "{{openvpn_key_dir}}"
+        owner: root
+        group: root
+        mode: 0400
+
+    - name: generate client key
+      command: "openssl req -nodes -newkey rsa:{{openvpn_rsa_bits}} -keyout {{item}}.key -out {{item}}.csr -days 3650 -subj /CN=OpenVPN-Client-{{ inventory_hostname[:24] }}-{{ item[:24] }}/"
+      args:
+        chdir: "{{ openvpn_key_dir }}"
+        creates: "{{item}}.key"
+      with_items: "{{clients}}"
+
+    - name: protect client keys
+      file:
+        path: "{{openvpn_key_dir}}/{{item}}.key"
+        mode: 0400
+      with_items: "{{clients}}"
+
+    - name: sign client key
+      command: openssl x509 -req -in {{item}}.csr -out {{item}}.crt -CA ca.crt -CAkey ca-key.pem -sha256 -days 3650 -extfile openssl-client.ext
+      args:
+        chdir: "{{openvpn_key_dir}}"
+        creates: "{{item}}.crt"
+      with_items: "{{clients}}"
+
+    - name: register server ca key
+      slurp:
+        src: "{{openvpn_key_dir}}/ca.crt"
+      register: ca_cert
+
+    - name: register tls-auth key
+      slurp:
+        src: "{{openvpn_key_dir}}/ta.key"
+      register: tls_auth
+
+    - name: register client certs
+      slurp:
+        src: "{{openvpn_key_dir}}/{{item}}.crt"
+      with_items: "{{clients}}"
+      register: client_certs
+
+    - name: register client keys
+      slurp:
+        src: "{{openvpn_key_dir}}/{{item}}.key"
+      with_items: "{{clients}}"
+      register: client_keys
+
+    - name: 'OpenVPN - Transfer client template'
+      template:
+        src: /home/viktor/temp/openvpn/templates/client.conf.j2
+        dest: /etc/openvpn/client.conf
+        owner: root
+        group: root
+        mode: 0644
+        backup: yes
+      notify: restart openvpn
+
+    - name: 'OpenVPN - Transfer key'
+      copy:
+        src: "{{ local_openvpn_keydir }}/{{ item }}.key"
+        dest: "{{ openvpn_keydir }}" 
+        owner: root
+        group: root
+        mode: 0600
+      with_items:
+        - "{{ inventory_hostname }}"
+      notify: restart openvpn
+
+    - name: 'OpenVPN - TLS key'
+      copy:
+        src: "{{ local_openvpn_keydir }}/{{ item }}.key"
+        dest: "{{ openvpn_keydir }}" 
+        owner: root
+        group: root
+        mode: 0600
+      with_items:
+        - secret
+      notify: restart openvpn
+      when: openvpn_tls_push == True
+
+    - name: 'OpenVPN - Transfer certificates'
+      copy:
+        src: "{{ local_openvpn_keydir }}/{{ item }}"
+        dest: "{{ openvpn_keydir }}" 
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - ca.crt
+        - "{{ inventory_hostname }}.crt"
+      notify: reload openvpn
