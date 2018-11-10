@@ -106,6 +106,8 @@
   with_together:
     - "{{client_certs.results}}"
     - "{{client_keys.results}}"
+  notify:
+    - restart openvpn
 
 - name: fetch client config
   fetch:
