@@ -1,12 +1,5 @@
 ---
-- block:
-    - name: 'restart openvpn'
-      service: 
-          name: openvpn@client
-          state: restarted
-
-    - name: 'openvpn reload'
-      service:
-          name: openvpn@client
-          state: reloaded
-  when: inventory_hostname in groups['clients']
+- name: restart openvpn
+  service:
+    name: "{{openvpn_service_name}}"
+    state: restarted
