@@ -16,7 +16,7 @@ key-direction 1
 </ca>
 
 <cert>
-{{ client_certs.content|b64decode }}
+{{ item.0.content|b64decode }}
 </cert>
 
 <key>
