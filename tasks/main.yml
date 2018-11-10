@@ -27,7 +27,7 @@
     owner: root
     group: root
     mode: 0400
-   with_items:
+  with_items:
     - openssl-server.ext
     - openssl-ca.ext
 
