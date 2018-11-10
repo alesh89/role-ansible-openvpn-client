@@ -23,7 +23,7 @@
 - name: 'Copy openssl client extensions'
   copy:
     src: openssl-client.ext
-    dest: "{{openvpn_key_dir}}"
+    dest: "{{openvpn_keydir}}"
     owner: root
     group: root
     mode: 0400
@@ -31,20 +31,20 @@
 - name: generate client key
   command: "openssl req -nodes -newkey rsa:{{openvpn_server_dh}} -keyout {{item}}.key -out {{item}}.csr -days 3650 -subj /CN=OpenVPN-Client-{{ inventory_hostname }}/"
   args:
-    chdir: "{{ openvpn_key_dir }}"
+    chdir: "{{ openvpn_keydir }}"
     creates: "{{item}}.key"
   with_items: "{{inventory_hostname}}"
 
 - name: protect client keys
   file:
-    path: "{{openvpn_key_dir}}/{{item}}.key"
+    path: "{{openvpn_keydir}}/{{item}}.key"
     mode: 0400
   with_items: "{{inventory_hostname}}"
 
 - name: sign client key
   command: openssl x509 -req -in {{item}}.csr -out {{item}}.crt -CA ca.crt -CAkey ca-key.pem -sha256 -days 3650 -extfile openssl-client.ext
   args:
-    chdir: "{{openvpn_key_dir}}"
+    chdir: "{{openvpn_keydir}}"
     creates: "{{item}}.crt"
   with_items: "{{inventory_hostname}}"
 
@@ -55,18 +55,18 @@
 
 - name: register tls-auth key
   slurp:
-    src: "{{openvpn_key_dir}}/ta.key"
+    src: "{{openvpn_keydir}}/ta.key"
   register: tls_auth
 
 - name: register client certs
   slurp:
-    src: "{{openvpn_key_dir}}/{{item}}.crt"
+    src: "{{openvpn_keydir}}/{{item}}.crt"
   with_items: "{{inventory_hostname}}"
   register: client_certs
 
 - name: register client keys
   slurp:
-    src: "{{openvpn_key_dir}}/{{item}}.key"
+    src: "{{openvpn_keydir}}/{{item}}.key"
   with_items: "{{inventory_hostname}}"
   register: client_keys
 
