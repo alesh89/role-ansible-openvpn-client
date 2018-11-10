@@ -22,7 +22,7 @@
 # generate client keys
 - name: 'Copy openssl client extensions'
   copy:
-    src: {{items}}
+    src: {{item}}
     dest: "{{openvpn_keydir}}"
     owner: root
     group: root
