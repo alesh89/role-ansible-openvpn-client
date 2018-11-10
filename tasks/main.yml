@@ -99,13 +99,13 @@
 - name: generate client config
   template:
     src: client.conf.j2
-    dest: "{{ openvpn_base_dir }}/{{item.0.item}}-{{inventory_hostname}}.conf"
+    dest: "{{ openvpn_base_dir }}/{{inventory_hostname}}.conf"
     owner: root
     group: root
     mode: 0400
-  with_together:
-    - "{{client_certs.results}}"
-    - "{{client_keys.results}}"
+#  with_together:
+#    - "{{client_certs.results}}"
+#    - "{{client_keys.results}}"
 
 - name: fetch client config
   fetch:
