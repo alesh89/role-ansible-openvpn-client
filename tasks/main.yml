@@ -22,11 +22,31 @@
 # generate client keys
 - name: 'Copy openssl client extensions'
   copy:
-    src: openssl-client.ext
+    src: {{items}}
     dest: "{{openvpn_keydir}}"
     owner: root
     group: root
     mode: 0400
+   with_items:
+    - openssl-server.ext
+    - openssl-ca.ext
+
+- name: Generate CA key
+  command: openssl req -nodes -newkey rsa:{{openvpn_server_dh}} -keyout ca-key.pem -out ca-csr.pem -days 3650 -subj /CN=OpenVPN-CA-{{inventory_hostname}}/
+  args:
+    chdir: "{{openvpn_keydir}}"
+    creates: ca-key.pem
+
+- name: Protect CA key
+  file:
+    path: "{{openvpn_keydir}}/ca-key.pem"
+    mode: 0400
+
+- name: Sign CA key
+  command: openssl x509 -req -in ca-csr.pem -out ca.crt -CAcreateserial -signkey ca-key.pem -sha256 -days 3650 -extfile openssl-ca.ext
+  args:
+    chdir: "{{openvpn_keydir}}"
+    creates: ca.crt
 
 - name: generate client key
   command: "openssl req -nodes -newkey rsa:{{openvpn_server_dh}} -keyout {{item}}.key -out {{item}}.csr -days 3650 -subj /CN=OpenVPN-Client-{{ inventory_hostname }}/"
