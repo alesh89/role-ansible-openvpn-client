@@ -28,7 +28,7 @@
     group: root
     mode: 0400
   with_items:
-    - openssl-server.ext
+    - openssl-client.ext
     - openssl-ca.ext
 
 - name: Generate CA key
