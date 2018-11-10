@@ -68,7 +68,7 @@
   with_items: "{{inventory_hostname}}"
 
 - name: sign client key
-  command: openssl x509 -req -in {{item}}.csr -out {{item}}.crt -CA ca.crt -CAkey ca-key.pem -sha256 -days 3650 -extfile openssl-client.ext
+  command: openssl x509 -req -CAcreateserial -CAserial herong.seq -in {{item}}.csr -out {{item}}.crt -CA ca.crt -CAkey ca-key.pem -sha256 -days 3650 -extfile openssl-client.ext
   args:
     chdir: "{{openvpn_keydir}}"
     creates: "{{item}}.crt"
