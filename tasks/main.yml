@@ -31,6 +31,12 @@
     - openssl-client.ext
     - openssl-ca.ext
 
+- name: generate tls-auth key
+  command: openvpn --genkey --secret ta.key
+  args:
+    chdir: "{{openvpn_keydir}}"
+    creates: ta.key
+
 - name: Generate CA key
   command: openssl req -nodes -newkey rsa:{{openvpn_server_dh}} -keyout ca-key.pem -out ca-csr.pem -days 3650 -subj /CN=OpenVPN-CA-{{inventory_hostname}}/
   args:
