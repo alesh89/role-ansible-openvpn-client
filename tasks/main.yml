@@ -99,7 +99,7 @@
 - name: generate client config
   template:
     src: client.conf.j2
-    dest: "{{ openvpn_base_dir }}/{{item.0.item}}{{inventory_hostname}}.conf"
+    dest: "{{ openvpn_base_dir }}/{{item.0.item}}-{{inventory_hostname}}.conf"
     owner: root
     group: root
     mode: 0400
@@ -113,47 +113,3 @@
     dest: "{{ openvpn_fetch_config_dir }}/{{item}}/{{inventory_hostname}}.conf"
     flat: yes
   with_items: "{{inventory_hostname}}"
-
-#    - name: 'OpenVPN - Transfer client template'
-#      template:
-#        src: client.conf.j2
-#        dest: {{ {openvpn_key_dir }}/client.conf
-#        owner: root
-#        group: root
-#        mode: 0644
-#        backup: yes
-#      notify: restart openvpn
-#    - name: 'OpenVPN - Transfer key'
-#      copy:
-#        src: "{{ local_openvpn_keydir }}/{{ item }}.key"
-#        dest: "{{ openvpn_keydir }}" 
-#        owner: root
-#        group: root
-#        mode: 0600
-#      with_items:
-#        - "{{ inventory_hostname }}"
-#      notify: restart openvpn
-#
-#    - name: 'OpenVPN - TLS key'
-#      copy:
-#        src: "{{ local_openvpn_keydir }}/{{ item }}.key"
-#        dest: "{{ openvpn_keydir }}" 
-#        owner: root
-#        group: root
-#        mode: 0600
-#      with_items:
-#        - secret
-#      notify: restart openvpn
-#      when: openvpn_tls_push == True
-#
-#    - name: 'OpenVPN - Transfer certificates'
-#      copy:
-#        src: "{{ local_openvpn_keydir }}/{{ item }}"
-#        dest: "{{ openvpn_keydir }}" 
-#        owner: root
-#        group: root
-#        mode: 0644
-#      with_items:
-#        - ca.crt
-#        - "{{ inventory_hostname }}.crt"
-#      notify: reload openvpn
