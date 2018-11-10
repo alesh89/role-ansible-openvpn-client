@@ -7,4 +7,4 @@
     - name: 'apt-get update'
       raw: "apt-get update"
   roles:
-    - role: openvpn
+    - role: ansible-openvpn
