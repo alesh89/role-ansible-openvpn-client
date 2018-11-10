@@ -1,4 +1,5 @@
 ---
+#Установка требуемых пакетов
 - name: 'Install packages'
   apt:
     name: '{{ item }}'
@@ -11,7 +12,7 @@
   tags:
     - always
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'xenial'
-
+#Создание директории для ключей и сертификатов
 - name: 'OpenVPN - Create keys directory'
   file:
     path: "{{ openvpn_base_dir }}/keys" 
@@ -19,7 +20,7 @@
     owner: root
     group: root
     state: directory
-# generate client keys
+#Перемещение файлов *.ext на удаленный сервер и генерация необходимых ключей и сертификатов
 - name: 'Copy openssl client extensions'
   copy:
     src: "{{item}}"
@@ -95,7 +96,7 @@
     src: "{{openvpn_keydir}}/{{item}}.key"
   with_items: "{{inventory_hostname}}"
   register: client_keys
-
+#Создание конфигурационного файла из шаблона
 - name: generate client config
   template:
     src: client.conf.j2
@@ -108,7 +109,7 @@
     - "{{client_keys.results}}"
   notify:
     - restart openvpn
-
+#Сохранение файла конфига на хост ansible,в директорию /tmp/ansible
 - name: fetch client config
   fetch:
     src: "{{ openvpn_base_dir }}/{{item}}-{{inventory_hostname}}.conf"
