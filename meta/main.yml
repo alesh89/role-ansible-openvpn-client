@@ -2,7 +2,7 @@
 
 galaxy_info:
   author: Viktor Aleshinskiy
-  description: Deploy openvpn clients.
+  description: Install openvpn clients.
 
   platforms:
   - name: Ubuntu
